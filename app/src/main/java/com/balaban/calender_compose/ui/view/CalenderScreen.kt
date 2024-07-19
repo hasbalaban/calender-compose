@@ -48,7 +48,11 @@ import java.util.Locale
 
 @Composable
 fun CalenderScreen(calenderProperties: CalenderProperty, onDateSelected: (LocalDate) -> Unit) {
-    VerticalCalender(calenderProperties, onDateSelected)
+    if (calenderProperties.calenderDirections == CalenderProperty.CalenderDirections.Vertical) {
+        VerticalCalender(calenderProperties, onDateSelected)
+        return
+    }
+    HorizontalCalender(calenderProperties, onDateSelected)
 }
 
 @Composable
@@ -157,6 +161,124 @@ private fun VerticalCalender(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun HorizontalCalender(
+    calenderProperties: CalenderProperty,
+    onDateSelected: (LocalDate) -> Unit
+) {
+
+    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+    val calenderItems =
+        remember { CustomCalender().provideMothAccordingInputs(calenderProperties = calenderProperties) }
+
+    val lazyListState = rememberLazyListState()
+    val flingBehavior = rememberSnapFlingBehavior(lazyListState = lazyListState)
+
+    val configuration = LocalConfiguration.current
+    val screenWidthPx = configuration.screenWidthDp
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth(),
+        horizontalAlignment = Alignment.End
+    ) {
+
+        LazyRow(
+            modifier = Modifier.fillMaxWidth(),
+            state = lazyListState,
+            flingBehavior = flingBehavior
+        ) {
+            items(calenderItems) { detail ->
+                val currentMonth = YearMonth.of(detail.year, detail.month)
+                val firstDayOfMonth = currentMonth.atDay(1)
+                val daysOfWeek = daysOfWeek()
+                val daysInMonth = (1..currentMonth.lengthOfMonth()).toList()
+
+                Column(modifier = Modifier.width(screenWidthPx.dp)) {
+
+                    Text(
+                        text = "${
+                            currentMonth.month.getDisplayName(
+                                TextStyle.FULL,
+                                Locale.getDefault()
+                            )
+                        } ${currentMonth.year}",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 4.dp)
+                    )
+                    HorizontalDivider(
+                        color = Color.LightGray.copy(alpha = 0.7f),
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        for (dayOfWeek in daysOfWeek) {
+
+                            Text(
+                                text = dayOfWeek.getDisplayName(
+                                    TextStyle.SHORT,
+                                    Locale.getDefault()
+                                ),
+                                modifier = Modifier
+                                    .padding(8.dp)
+                                    .weight(1f),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                    Column {
+                        daysInMonth.chunked(7).forEach { week ->
+                            Row(modifier = Modifier.fillMaxWidth()) {
+                                week.forEachIndexed { index, day ->
+                                    val date = firstDayOfMonth.plusDays(day.toLong() - 1)
+                                    Box(
+                                        modifier = Modifier
+                                            .background(
+                                                if (date == selectedDate) MaterialTheme.colorScheme.primary else Color.Transparent
+                                            )
+                                            .clickable { selectedDate = date }
+                                            .then(
+                                                if (week.size == 7) {
+                                                    Modifier.fillMaxWidth(1f / (7 - index))
+                                                } else {
+                                                    Modifier.fillMaxWidth(1f / (7 - index))
+                                                }
+                                            )
+
+                                            .padding(8.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(text = day.toString())
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
+
+
+
+
+            }
+
+
+        }
+        Button(
+            onClick = {
+                selectedDate?.let {
+                    onDateSelected(selectedDate)
+                }
+            },
+            modifier = Modifier
+                .alpha(0.9f)
+                .padding(16.dp)
+        ) {
+            Text(text = "Show Detail")
+        }
+    }
+}
 
 
 interface CalenderOperations {
