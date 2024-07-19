@@ -4,7 +4,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,15 +18,13 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Button
-import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.neverEqualPolicy
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -35,7 +32,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.balaban.calender_compose.CalenderProperty
@@ -61,7 +57,7 @@ private fun VerticalCalender(
     onDateSelected: (LocalDate) -> Unit
 ) {
 
-    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+    var selectedDates by remember { mutableStateOf(listOf(LocalDate.now())) }
     val calenderItems =
         remember { CustomCalender().provideMothAccordingInputs(calenderProperties = calenderProperties) }
 
@@ -114,9 +110,27 @@ private fun VerticalCalender(
                                 Box(
                                     modifier = Modifier
                                         .background(
-                                            if (date == selectedDate) MaterialTheme.colorScheme.primary else Color.Transparent
+                                            if (selectedDates.contains(date)) MaterialTheme.colorScheme.primary else Color.Transparent
                                         )
-                                        .clickable { selectedDate = date }
+                                        .clickable {
+                                            when (calenderProperties.calenderSelectionType) {
+                                            CalenderProperty.CalenderSelectionType.Single -> {
+                                                selectedDates = emptyList()
+                                                selectedDates = selectedDates + date
+                                            }
+
+                                            CalenderProperty.CalenderSelectionType.Multiple -> {
+                                                selectedDates = if (selectedDates.contains(date)) {
+                                                    selectedDates - date
+                                                } else {
+                                                    selectedDates + date
+                                                }
+                                            }
+
+                                            else -> {}
+                                        }
+
+                                        }
                                         .then(
                                             if (week.size == 7) {
                                                 Modifier.fillMaxWidth(1f / (7 - index))
@@ -146,18 +160,6 @@ private fun VerticalCalender(
 
 
         }
-        Button(
-            onClick = {
-                selectedDate?.let {
-                    onDateSelected(selectedDate)
-                }
-            },
-            modifier = Modifier
-                .alpha(0.9f)
-                .padding(16.dp)
-        ) {
-            Text(text = "Show Detail")
-        }
     }
 }
 
@@ -168,7 +170,7 @@ private fun HorizontalCalender(
     onDateSelected: (LocalDate) -> Unit
 ) {
 
-    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+    var selectedDates by remember { mutableStateOf(listOf(LocalDate.now()), neverEqualPolicy()) }
     val calenderItems =
         remember { CustomCalender().provideMothAccordingInputs(calenderProperties = calenderProperties) }
 
@@ -205,7 +207,12 @@ private fun HorizontalCalender(
                             )
                         } ${currentMonth.year}",
                         style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 4.dp)
+                        modifier = Modifier.padding(
+                            top = 16.dp,
+                            start = 16.dp,
+                            end = 16.dp,
+                            bottom = 4.dp
+                        )
                     )
                     HorizontalDivider(
                         color = Color.LightGray.copy(alpha = 0.7f),
@@ -235,9 +242,27 @@ private fun HorizontalCalender(
                                     Box(
                                         modifier = Modifier
                                             .background(
-                                                if (date == selectedDate) MaterialTheme.colorScheme.primary else Color.Transparent
+                                                if (selectedDates.contains(date)) MaterialTheme.colorScheme.primary else Color.Transparent
                                             )
-                                            .clickable { selectedDate = date }
+                                            .clickable {
+                                                when (calenderProperties.calenderSelectionType) {
+                                                    CalenderProperty.CalenderSelectionType.Single -> {
+                                                        selectedDates = emptyList()
+                                                        selectedDates = selectedDates + date
+                                                    }
+
+                                                    CalenderProperty.CalenderSelectionType.Multiple -> {
+                                                        selectedDates = if (selectedDates.contains(date)) {
+                                                            selectedDates - date
+                                                        } else {
+                                                            selectedDates + date
+                                                        }
+                                                    }
+
+                                                    else -> {}
+                                                }
+
+                                            }
                                             .then(
                                                 if (week.size == 7) {
                                                     Modifier.fillMaxWidth(1f / (7 - index))
@@ -259,17 +284,17 @@ private fun HorizontalCalender(
                 }
 
 
-
-
             }
 
 
         }
         Button(
             onClick = {
-                selectedDate?.let {
-                    onDateSelected(selectedDate)
-                }
+                println(selectedDates)
+                println(selectedDates)
+                println(selectedDates)
+                println(selectedDates)
+                println(selectedDates)
             },
             modifier = Modifier
                 .alpha(0.9f)

@@ -6,6 +6,7 @@ class CalenderProperty private constructor(
     val countNextYears: Int = 0,
     val countNextMounts: Int = 0,
     val calenderDirections: CalenderDirections = CalenderDirections.Vertical,
+    val calenderSelectionType: CalenderSelectionType = CalenderSelectionType.Single,
 ) {
     class Builder {
 
@@ -14,6 +15,7 @@ class CalenderProperty private constructor(
         private var countNextYears: Int = 0
         private var countNextMounts: Int = 0
         private var calenderDirections: CalenderDirections = CalenderDirections.Vertical
+        private var calenderSelectionType: CalenderSelectionType = CalenderSelectionType.Single
 
         // Methods for setting properties
         fun countOldYear(countOldYears: Int) = apply { this.countOldYears = countOldYears }
@@ -21,16 +23,28 @@ class CalenderProperty private constructor(
         fun countNextYear(countNextYears: Int) = apply { this.countNextYears = countNextYears }
         fun countNextMount(countNextMounts: Int) = apply { this.countNextMounts = countNextMounts }
         fun calenderDirection(calenderDirection: CalenderDirections) = apply { this.calenderDirections = calenderDirection }
+        fun calenderSelectionType(calenderSelectionType: CalenderSelectionType) = apply { this.calenderSelectionType = calenderSelectionType }
 
-        // Build method to create User instance
         fun build(): CalenderProperty {
-            return CalenderProperty(countOldYears, countOldMounts, countNextYears, countNextMounts, calenderDirections)
+            return CalenderProperty(
+                countOldYears,
+                countOldMounts,
+                countNextYears,
+                countNextMounts,
+                calenderDirections,
+                calenderSelectionType
+            )
         }
 
     }
 
     enum class CalenderDirections() {
         Horizontal, Vertical
+    }
+
+
+    enum class CalenderSelectionType() {
+        Single, Multiple
     }
 
 }
