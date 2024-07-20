@@ -44,7 +44,7 @@ class CalenderProperty private constructor(
 
 
     enum class CalenderSelectionType() {
-        Single, Multiple
+        Single, Multiple, DateRange
     }
 
 }

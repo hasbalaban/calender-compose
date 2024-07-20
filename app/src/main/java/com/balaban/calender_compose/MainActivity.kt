@@ -40,7 +40,7 @@ fun MainScreen( onDateSelected : () -> Unit, modifier: Modifier = Modifier) {
         .countNextYear(1)
         .countNextMount(2)
         .calenderDirection(CalenderProperty.CalenderDirections.Horizontal)
-        .calenderSelectionType(CalenderProperty.CalenderSelectionType.Multiple)
+        .calenderSelectionType(CalenderProperty.CalenderSelectionType.DateRange)
         .build()
 
     CalenderScreen(calenderProperties = calenderProperties) {

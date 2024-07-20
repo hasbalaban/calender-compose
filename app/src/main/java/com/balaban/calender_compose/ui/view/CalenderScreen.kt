@@ -22,6 +22,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.neverEqualPolicy
@@ -57,7 +58,20 @@ private fun VerticalCalender(
     onDateSelected: (LocalDate) -> Unit
 ) {
 
-    var selectedDates by remember { mutableStateOf(listOf(LocalDate.now())) }
+    var selectedDates: List<LocalDate> by remember {
+        mutableStateOf(
+            if (calenderProperties.calenderSelectionType == CalenderProperty.CalenderSelectionType.Single) listOf(
+                LocalDate.now()
+            ) else emptyList()
+        )
+    }
+
+    val sortedList by remember {
+        derivedStateOf {
+            selectedDates.sorted()
+        }
+    }
+
     val calenderItems =
         remember { CustomCalender().provideMothAccordingInputs(calenderProperties = calenderProperties) }
 
@@ -110,25 +124,61 @@ private fun VerticalCalender(
                                 Box(
                                     modifier = Modifier
                                         .background(
-                                            if (selectedDates.contains(date)) MaterialTheme.colorScheme.primary else Color.Transparent
+                                            if (calenderProperties.calenderSelectionType != CalenderProperty.CalenderSelectionType.DateRange && sortedList.contains(
+                                                    date
+                                                )
+                                            ) {
+                                                MaterialTheme.colorScheme.primary
+                                            } else if (sortedList.isNotEmpty() && date in sortedList.first()..sortedList.last()) {
+                                                MaterialTheme.colorScheme.primary
+                                            } else Color.Transparent
                                         )
                                         .clickable {
                                             when (calenderProperties.calenderSelectionType) {
-                                            CalenderProperty.CalenderSelectionType.Single -> {
-                                                selectedDates = emptyList()
-                                                selectedDates = selectedDates + date
-                                            }
+                                                CalenderProperty.CalenderSelectionType.Single -> {
+                                                    selectedDates = emptyList()
+                                                    selectedDates = selectedDates + date
+                                                }
 
-                                            CalenderProperty.CalenderSelectionType.Multiple -> {
-                                                selectedDates = if (selectedDates.contains(date)) {
-                                                    selectedDates - date
-                                                } else {
-                                                    selectedDates + date
+                                                CalenderProperty.CalenderSelectionType.Multiple -> {
+                                                    selectedDates =
+                                                        if (selectedDates.contains(date)) {
+                                                            selectedDates - date
+                                                        } else {
+                                                            selectedDates + date
+                                                        }
+                                                }
+
+                                                CalenderProperty.CalenderSelectionType.DateRange -> {
+                                                    if (selectedDates.size < 2) {
+                                                        selectedDates =
+                                                            if (selectedDates.contains(date)) {
+                                                                selectedDates - date
+                                                            } else {
+                                                                selectedDates + date
+                                                            }
+                                                    } else {
+
+                                                        val sortedList = selectedDates.sorted()
+
+                                                        if (date < sortedList.first()) {
+                                                            selectedDates =
+                                                                listOf(date, sortedList.last())
+                                                        } else if (date > sortedList.last()) {
+                                                            selectedDates =
+                                                                listOf(sortedList.last(), date)
+                                                        } else {
+                                                            if (selectedDates.contains(date)) {
+                                                                selectedDates =
+                                                                    selectedDates - date
+                                                            } else {
+                                                                selectedDates =
+                                                                    selectedDates + date
+                                                            }
+                                                        }
+                                                    }
                                                 }
                                             }
-
-                                            else -> {}
-                                        }
 
                                         }
                                         .then(
@@ -170,7 +220,13 @@ private fun HorizontalCalender(
     onDateSelected: (LocalDate) -> Unit
 ) {
 
-    var selectedDates by remember { mutableStateOf(listOf(LocalDate.now()), neverEqualPolicy()) }
+    var selectedDates: List<LocalDate> by remember {
+        mutableStateOf(
+            if (calenderProperties.calenderSelectionType == CalenderProperty.CalenderSelectionType.Single) listOf(
+                LocalDate.now()
+            ) else emptyList()
+        )
+    }
     val calenderItems =
         remember { CustomCalender().provideMothAccordingInputs(calenderProperties = calenderProperties) }
 
@@ -196,6 +252,13 @@ private fun HorizontalCalender(
                 val firstDayOfMonth = currentMonth.atDay(1)
                 val daysOfWeek = daysOfWeek()
                 val daysInMonth = (1..currentMonth.lengthOfMonth()).toList()
+
+                val sortedList by remember {
+                    derivedStateOf {
+                        selectedDates.sorted()
+                    }
+                }
+
 
                 Column(modifier = Modifier.width(screenWidthPx.dp)) {
 
@@ -242,7 +305,14 @@ private fun HorizontalCalender(
                                     Box(
                                         modifier = Modifier
                                             .background(
-                                                if (selectedDates.contains(date)) MaterialTheme.colorScheme.primary else Color.Transparent
+                                                if (calenderProperties.calenderSelectionType != CalenderProperty.CalenderSelectionType.DateRange && sortedList.contains(
+                                                        date
+                                                    )
+                                                ) {
+                                                    MaterialTheme.colorScheme.primary
+                                                } else if (sortedList.isNotEmpty() && date in sortedList.first()..sortedList.last()) {
+                                                    MaterialTheme.colorScheme.primary
+                                                } else Color.Transparent
                                             )
                                             .clickable {
                                                 when (calenderProperties.calenderSelectionType) {
@@ -252,14 +322,20 @@ private fun HorizontalCalender(
                                                     }
 
                                                     CalenderProperty.CalenderSelectionType.Multiple -> {
-                                                        selectedDates = if (selectedDates.contains(date)) {
-                                                            selectedDates - date
-                                                        } else {
-                                                            selectedDates + date
-                                                        }
+                                                        selectedDates =
+                                                            if (selectedDates.contains(date)) {
+                                                                selectedDates - date
+                                                            } else {
+                                                                selectedDates + date
+                                                            }
                                                     }
 
-                                                    else -> {}
+                                                    CalenderProperty.CalenderSelectionType.DateRange -> {
+                                                        selectedDates = calculateNewRange(
+                                                            selectedDates = sortedList,
+                                                            clickedDate = date
+                                                        )
+                                                    }
                                                 }
 
                                             }
@@ -343,6 +419,46 @@ class CustomCalender() : CalenderOperations {
 
 }
 
+
+private fun calculateNewRange(
+    selectedDates: List<LocalDate>,
+    clickedDate: LocalDate
+): List<LocalDate> {
+    val rangeDate = mutableListOf<LocalDate>()
+    rangeDate.addAll(selectedDates)
+
+    if (rangeDate.size < 2 && rangeDate.contains(clickedDate)){
+        rangeDate.remove(clickedDate)
+        return rangeDate
+    }
+
+    if (rangeDate.size < 2 && !rangeDate.contains(clickedDate)){
+        rangeDate.add(clickedDate)
+        return rangeDate
+    }
+
+    if (clickedDate > rangeDate.last()) {
+        val newRange = listOf(rangeDate.last(), clickedDate)
+        rangeDate.clear()
+        rangeDate.addAll(newRange)
+        return rangeDate
+    }
+
+    if (clickedDate < rangeDate.last()) {
+        val newRange = listOf(clickedDate, rangeDate.last())
+        rangeDate.addAll(newRange)
+        rangeDate.clear()
+        return rangeDate
+    }
+
+    if (rangeDate.contains(clickedDate)) {
+        rangeDate.remove(clickedDate)
+        return rangeDate
+    }
+
+    rangeDate.add(clickedDate)
+    return rangeDate
+}
 
 fun daysOfWeek(): List<DayOfWeek> {
     val daysOfWeek = DayOfWeek.entries
