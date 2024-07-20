@@ -150,33 +150,10 @@ private fun VerticalCalender(
                                                 }
 
                                                 CalenderProperty.CalenderSelectionType.DateRange -> {
-                                                    if (selectedDates.size < 2) {
-                                                        selectedDates =
-                                                            if (selectedDates.contains(date)) {
-                                                                selectedDates - date
-                                                            } else {
-                                                                selectedDates + date
-                                                            }
-                                                    } else {
-
-                                                        val sortedList = selectedDates.sorted()
-
-                                                        if (date < sortedList.first()) {
-                                                            selectedDates =
-                                                                listOf(date, sortedList.last())
-                                                        } else if (date > sortedList.last()) {
-                                                            selectedDates =
-                                                                listOf(sortedList.last(), date)
-                                                        } else {
-                                                            if (selectedDates.contains(date)) {
-                                                                selectedDates =
-                                                                    selectedDates - date
-                                                            } else {
-                                                                selectedDates =
-                                                                    selectedDates + date
-                                                            }
-                                                        }
-                                                    }
+                                                    selectedDates = calculateNewRange(
+                                                        selectedDates = sortedList,
+                                                        clickedDate = date
+                                                    )
                                                 }
                                             }
 
