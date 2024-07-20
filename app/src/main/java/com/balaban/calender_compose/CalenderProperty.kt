@@ -1,5 +1,7 @@
 package com.balaban.calender_compose
 
+import java.time.LocalDate
+
 class CalenderProperty private constructor(
     val countOldYears: Int = 0,
     val countOldMounts: Int = 0,
@@ -47,5 +49,14 @@ class CalenderProperty private constructor(
         Single, Multiple, DateRange
     }
 
+}
+
+
+operator fun ClosedRange<LocalDate>.iterator(): Iterator<LocalDate> = object : Iterator<LocalDate> {
+    private var current = start
+    override fun hasNext() = current <= endInclusive
+    override fun next() = current.apply {
+        current = plusDays(1)
+    }
 }
 

@@ -36,6 +36,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.balaban.calender_compose.CalenderProperty
+import com.balaban.calender_compose.iterator
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
@@ -404,36 +405,58 @@ private fun calculateNewRange(
     val rangeDate = mutableListOf<LocalDate>()
     rangeDate.addAll(selectedDates)
 
-    if (rangeDate.size < 2 && rangeDate.contains(clickedDate)){
+    if (rangeDate.size < 2 && rangeDate.contains(clickedDate)) {
         rangeDate.remove(clickedDate)
         return rangeDate
     }
 
-    if (rangeDate.size < 2 && !rangeDate.contains(clickedDate)){
+    if (rangeDate.size < 2 && !rangeDate.contains(clickedDate)) {
+        rangeDate.add(clickedDate)
+        return rangeDate
+    }
+
+    if (rangeDate.contains(clickedDate)) {
+        rangeDate.clear()
         rangeDate.add(clickedDate)
         return rangeDate
     }
 
     if (clickedDate > rangeDate.last()) {
-        val newRange = listOf(rangeDate.last(), clickedDate)
+        val newRange = listOf(rangeDate.first(), clickedDate)
+
         rangeDate.clear()
         rangeDate.addAll(newRange)
         return rangeDate
     }
 
-    if (clickedDate < rangeDate.last()) {
+    if (clickedDate < rangeDate.first()) {
         val newRange = listOf(clickedDate, rangeDate.last())
-        rangeDate.addAll(newRange)
+
         rangeDate.clear()
+        rangeDate.addAll(newRange)
         return rangeDate
     }
 
-    if (rangeDate.contains(clickedDate)) {
-        rangeDate.remove(clickedDate)
+
+    val range = rangeDate.first()..rangeDate.last()
+    val rangeList = mutableListOf<LocalDate>()
+    for (item in range) {
+        rangeList.add(item)
+    }
+
+    val currentItemIndex = rangeList.indexOf(clickedDate)
+    val farFromLastItem = rangeList.size - currentItemIndex
+
+    if (farFromLastItem < currentItemIndex) {
+        val newRange = listOf(rangeDate.first(), clickedDate)
+        rangeDate.clear()
+        rangeDate.addAll(newRange)
         return rangeDate
     }
 
-    rangeDate.add(clickedDate)
+    val newRange = listOf(clickedDate, rangeDate.last())
+    rangeDate.clear()
+    rangeDate.addAll(newRange)
     return rangeDate
 }
 
