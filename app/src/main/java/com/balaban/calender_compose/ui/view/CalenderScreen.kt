@@ -17,6 +17,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -31,7 +33,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -132,7 +136,13 @@ private fun VerticalCalender(
                                                 MaterialTheme.colorScheme.primary
                                             } else if (sortedList.isNotEmpty() && date in sortedList.first()..sortedList.last()) {
                                                 MaterialTheme.colorScheme.primary
-                                            } else Color.Transparent
+                                            } else Color.Transparent,
+                                            when (date) {
+                                                sortedList.firstOrNull() -> RoundedCornerShape(50, 0, 0, 50)
+                                                sortedList.lastOrNull() -> RoundedCornerShape(0, 50, 50, 0)
+                                                else -> RectangleShape
+                                            }
+
                                         )
                                         .clickable {
                                             when (calenderProperties.calenderSelectionType) {
@@ -170,7 +180,13 @@ private fun VerticalCalender(
                                         .padding(8.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text(text = day.toString())
+                                    Text(text = day.toString(),
+                                        color =
+                                        if (calenderProperties.calenderSelectionType != CalenderProperty.CalenderSelectionType.DateRange && sortedList.contains(date)) {
+                                            Color.White
+                                        } else if (sortedList.isNotEmpty() && date in sortedList.first()..sortedList.last()) {
+                                            Color.White
+                                        } else Color.Unspecified)
                                 }
                             }
                         }
@@ -275,13 +291,14 @@ private fun HorizontalCalender(
                             )
                         }
                     }
-                    Column {
+                    Column (modifier = Modifier.padding(horizontal = 2.dp)) {
                         daysInMonth.chunked(7).forEach { week ->
                             Row(modifier = Modifier.fillMaxWidth()) {
                                 week.forEachIndexed { index, day ->
                                     val date = firstDayOfMonth.plusDays(day.toLong() - 1)
                                     Box(
                                         modifier = Modifier
+                                            .padding(vertical = 2.dp)
                                             .background(
                                                 if (calenderProperties.calenderSelectionType != CalenderProperty.CalenderSelectionType.DateRange && sortedList.contains(
                                                         date
@@ -290,7 +307,12 @@ private fun HorizontalCalender(
                                                     MaterialTheme.colorScheme.primary
                                                 } else if (sortedList.isNotEmpty() && date in sortedList.first()..sortedList.last()) {
                                                     MaterialTheme.colorScheme.primary
-                                                } else Color.Transparent
+                                                } else Color.Transparent,
+                                                when (date) {
+                                                    sortedList.firstOrNull() -> RoundedCornerShape(50, 0, 0, 50)
+                                                    sortedList.lastOrNull() -> RoundedCornerShape(0, 50, 50, 0)
+                                                    else -> RectangleShape
+                                                }
                                             )
                                             .clickable {
                                                 when (calenderProperties.calenderSelectionType) {
@@ -328,7 +350,18 @@ private fun HorizontalCalender(
                                             .padding(8.dp),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        Text(text = day.toString())
+                                        Text(text = day.toString(),
+
+                                            color =
+                                            if (calenderProperties.calenderSelectionType != CalenderProperty.CalenderSelectionType.DateRange && sortedList.contains(
+                                                    date
+                                                )
+                                            ) {
+                                                Color.White
+                                            } else if (sortedList.isNotEmpty() && date in sortedList.first()..sortedList.last()) {
+                                                Color.White
+                                            } else Color.Unspecified
+                                        )
                                     }
                                 }
                             }
